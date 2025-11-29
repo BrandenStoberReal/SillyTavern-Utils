@@ -26,12 +26,6 @@ AddCheckbox(parentElement, {
 }, (value) => console.log('Cool checkbox changed state to: ' + value));
 ```
 
-## Recommended CSS Stylings
-
-For best results using the UI helpers, please import relevant CSS stylings
-from [here](https://github.com/BrandenStoberReal/Extension-SillyTavern-Outfits/blob/main/src/css/style.css) or write
-your own.
-
 ## Building from source
 
 To build the library from source, you'll need to have Node.js and npm installed.

@@ -1,4 +1,5 @@
 import {AddButton, AddCheckbox, AddGroup, AddRange, AddTextbox} from './ui/html';
+import {contextUtil} from './context';
 
 /**
  * Represents the types of settings supported by the SettingsManager
@@ -42,7 +43,11 @@ export class SettingsManager<T extends SettingsSchema> {
     constructor(defaultSettings: T, moduleName: string) {
         this.defaultSettings = defaultSettings;
         this.moduleName = moduleName;
-        this.load();
+        this.settings = {} as { [K in keyof T]: T[K]['value'] };
+        // Settings will be loaded asynchronously after instantiation
+        this.load().catch(error => {
+            console.error(`Failed to load settings for ${moduleName}:`, error);
+        });
     }
 
     /**
@@ -131,8 +136,8 @@ export class SettingsManager<T extends SettingsSchema> {
     /**
      * Loads settings from SillyTavern's extension settings
      */
-    private load() {
-        const context = SillyTavern.getContext();
+    private async load() {
+        const context = await contextUtil.fetchSillyTavernContext();
 
         const extensionSettings = (context.extensionSettings as Record<string, any>)[this.moduleName] ?? {};
 
@@ -147,9 +152,8 @@ export class SettingsManager<T extends SettingsSchema> {
     /**
      * Saves settings to SillyTavern's extension settings
      */
-    private save() {
-        // In actual ST extension, this would be: const context = SillyTavern.getContext();
-        const context = SillyTavern.getContext();
+    private async save() {
+        const context = await contextUtil.fetchSillyTavernContext();
 
         if (!(context.extensionSettings as Record<string, any>)[this.moduleName]) {
             (context.extensionSettings as Record<string, any>)[this.moduleName] = {};
@@ -177,7 +181,7 @@ export function createSettingsSchema<T extends SettingsSchema>(schema: T): Reado
  * @param extensionName The display name of the extension
  * @param logger Optional logger for error/info messages
  */
-export function registerSettingsPanel(
+export async function registerSettingsPanel(
     settingsManager: SettingsManager<any>,
     extensionId: string,
     extensionName: string,
@@ -197,9 +201,9 @@ export function registerSettingsPanel(
         </div>
     `;
 
-    // Wait for the app to be ready before trying to add settings
-    if (typeof (window as any).SillyTavern !== 'undefined' && (window as any).SillyTavern.getContext) {
-        const context = (window as any).SillyTavern.getContext();
+    try {
+        // Wait for the app to be ready before trying to add settings
+        const context = await contextUtil.fetchSillyTavernContext();
         if (context && context.eventSource) {
             // Listen for when the app is ready
             context.eventSource.on(context.event_types.APP_READY, function () {
@@ -224,6 +228,11 @@ export function registerSettingsPanel(
                     }
                 }
             });
+        }
+    } catch (error) {
+        console.error(`Failed to register settings panel for ${extensionName}:`, error);
+        if (logger) {
+            logger.error(`${extensionName}: Failed to register settings panel - ${error}`);
         }
     }
 }

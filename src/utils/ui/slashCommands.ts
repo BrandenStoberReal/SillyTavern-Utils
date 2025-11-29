@@ -50,6 +50,7 @@ export class SlashCommandsUtil {
                 return false;
             }
 
+            // Create the command object
             const command = (globalThis as any).SlashCommand.fromProps({
                 name: name,
                 callback: callback,
@@ -59,6 +60,7 @@ export class SlashCommandsUtil {
                 helpStringShort: options?.helpStringShort || `/${name} command`,
             });
 
+            // Add the command to the parser
             (globalThis as any).SlashCommandParser.addCommandObject(command);
             this.logger.info(`Slash command registered: /${name}`);
 
@@ -114,5 +116,5 @@ export class SlashCommandsUtil {
     }
 }
 
-// Export a singleton instance getter for convenience that ensures proper initialization
+// Export a singleton instance for convenience
 export const slashCommandsUtil = SlashCommandsUtil.getInstance();

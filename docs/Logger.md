@@ -132,6 +132,15 @@ Sets the prefix for this logger instance:
 logger.setPrefix('NewPrefix');
 ```
 
+#### `static getDefaultLogLevel(): LogLevel`
+
+Gets the default log level used when creating new Logger instances:
+
+```typescript
+const defaultLevel = Logger.getDefaultLogLevel();
+console.log('Default log level:', defaultLevel); // LogLevel.INFO
+```
+
 ### Convenience Functions
 
 The utility provides convenience functions that use the default logger instance:

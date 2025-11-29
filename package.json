@@ -1,6 +1,6 @@
 {
   "name": "sillytavern-utils",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A collection of TypeScript utilities and type definitions for SillyTavern.",
   "main": "./dist/bundle.js",
   "types": "./dist/index.d.ts",

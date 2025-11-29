@@ -210,6 +210,69 @@ export function AddTextbox(
 }
 
 /**
+ * Adds a range slider element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the range slider to
+ * @param {RangeOptions} options - The options for configuring the range slider
+ * @param {function(number): void} callback - The callback function to execute when the range value changes
+ * @returns {HTMLInputElement} The created range input element
+ */
+export function AddRange(
+    parent: HTMLElement,
+    options: RangeOptions,
+    callback: (value: number) => void,
+): HTMLInputElement {
+    const wrapper = createWrapper(options);
+
+    const id =
+        options.id ??
+        `sillytavern-lib-range-${Math.random().toString(36).substring(2)}`;
+
+    if (options.label) {
+        const label = createLabel(id, options.label, options.labelClass);
+        wrapper.appendChild(label);
+    }
+
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.id = id;
+    range.min = (options.min ?? 0).toString();
+    range.max = (options.max ?? 100).toString();
+    range.step = (options.step ?? 1).toString();
+    range.value = (options.value ?? 50).toString();
+
+    if (options.attributes) {
+        Object.entries(options.attributes).forEach(([key, value]) => {
+            range.setAttribute(key, value);
+        });
+    }
+
+    range.addEventListener('input', () => {
+        callback(parseFloat(range.value));
+    });
+
+    wrapper.appendChild(range);
+
+    // Add value display next to the range
+    const valueDisplay = document.createElement('span');
+    valueDisplay.textContent = range.value;
+    valueDisplay.classList.add('sillytavern-lib-range-value');
+    wrapper.appendChild(valueDisplay);
+
+    // Update value display when range changes
+    range.addEventListener('input', () => {
+        valueDisplay.textContent = range.value;
+    });
+
+    if (options.description && (options.includeDescription ?? true)) {
+        const description = createDescription(options.description);
+        wrapper.appendChild(description);
+    }
+
+    parent.appendChild(wrapper);
+    return range;
+}
+
+/**
  * Adds a button element to the specified parent element.
  * @param {HTMLElement} parent - The parent element to append the button to
  * @param {ButtonOptions} options - The options for configuring the button

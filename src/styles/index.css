@@ -44,6 +44,18 @@
     margin-right: 0.5rem;
 }
 
+.sillytavern-lib-option input[type="range"] {
+    width: 100%;
+    margin-right: 0.5rem;
+}
+
+.sillytavern-lib-option .sillytavern-lib-range-value {
+    min-width: 30px;
+    text-align: center;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
 .sillytavern-lib-option-description {
     font-size: 0.8rem;
     color: #666;

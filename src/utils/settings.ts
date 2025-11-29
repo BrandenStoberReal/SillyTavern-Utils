@@ -208,8 +208,8 @@ export async function registerSettingsPanel(
             // Listen for when the app is ready
             context.eventSource.on(context.event_types.APP_READY, function () {
                 // Add settings panel to the extensions settings container using jQuery
-                if (typeof (window as any).$ !== 'undefined') {
-                    (window as any).$('#extensions_settings').append(settingsHtml);
+                if (typeof $ !== 'undefined') {
+                    $('#extensions_settings').append(settingsHtml);
                     const settingsContent = document.getElementById(`${extensionId}-settings-content`);
                     if (settingsContent) {
                         settingsManager.render(settingsContent);
@@ -228,6 +228,11 @@ export async function registerSettingsPanel(
                     }
                 }
             });
+        } else {
+            console.error(`${extensionName}: SillyTavern context or eventSource not available`);
+            if (logger) {
+                logger.error(`${extensionName}: SillyTavern context or eventSource not available`);
+            }
         }
     } catch (error) {
         console.error(`Failed to register settings panel for ${extensionName}:`, error);

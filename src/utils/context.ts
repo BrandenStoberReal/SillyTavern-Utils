@@ -5,7 +5,6 @@ import {ISillyTavernContext} from '../types';
  */
 export class ContextUtil {
     private static _instance: ContextUtil;
-    private _context: ISillyTavernContext | null = null;
 
     /**
      * Get the singleton instance of ContextUtil
@@ -22,16 +21,10 @@ export class ContextUtil {
      * @returns Promise resolving to the current context
      */
     public async fetchSillyTavernContext(): Promise<ISillyTavernContext> {
-        // If we already have the context cached, return it
-        if (this._context) {
-            return this._context;
-        }
-
         // Try to get the context from the global window object
         if (typeof window !== 'undefined' && (window as any).SillyTavern) {
             const context = (window as any).SillyTavern;
             if (context) {
-                this._context = context;
                 return context;
             }
         }
@@ -40,7 +33,6 @@ export class ContextUtil {
         if (typeof window !== 'undefined' && (window as any).context) {
             const context = (window as any).context;
             if (context) {
-                this._context = context;
                 return context;
             }
         }
@@ -52,7 +44,6 @@ export class ContextUtil {
             if (typeof global !== 'undefined' && (global as any).SillyTavern) {
                 const context = (global as any).SillyTavern;
                 if (context) {
-                    this._context = context;
                     return context;
                 }
             }
@@ -61,22 +52,6 @@ export class ContextUtil {
         }
 
         throw new Error('SillyTavern context is not available');
-    }
-
-    /**
-     * Get the cached context instance
-     */
-    public getContext(): ISillyTavernContext | null {
-        return this._context;
-    }
-
-    /**
-     * Force update the cached context
-     */
-    public async updateContext(): Promise<ISillyTavernContext> {
-        const context = await this.fetchSillyTavernContext();
-        this._context = context;
-        return context;
     }
 
     /**

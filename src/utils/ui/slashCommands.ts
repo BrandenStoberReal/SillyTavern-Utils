@@ -114,5 +114,5 @@ export class SlashCommandsUtil {
     }
 }
 
-// Export a singleton instance for convenience
+// Export a singleton instance getter for convenience that ensures proper initialization
 export const slashCommandsUtil = SlashCommandsUtil.getInstance();

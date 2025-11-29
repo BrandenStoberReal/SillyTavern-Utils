@@ -1,4 +1,4 @@
-import {Logger} from '../logging';
+import {Logger} from '../logging/logger';
 
 /**
  * Slash Commands utility for registering and managing SillyTavern slash commands
@@ -111,87 +111,6 @@ export class SlashCommandsUtil {
             failed: failedCommands.length,
             failedCommands,
         };
-    }
-
-    /**
-     * Check if the slash command system is available
-     */
-    public isSlashCommandSystemAvailable(): boolean {
-        return (
-            typeof (globalThis as any).SlashCommandParser !== 'undefined' &&
-            typeof (globalThis as any).SlashCommand !== 'undefined'
-        );
-    }
-
-    /**
-     * Unregister a slash command (if supported by SillyTavern)
-     * @param name The command name to unregister
-     */
-    public unregisterSlashCommand(name: string): boolean {
-        try {
-            if (!this.isSlashCommandSystemAvailable()) {
-                this.logger.warn(`Slash command system not available, cannot unregister: /${name}`);
-                return false;
-            }
-
-            // Note: This functionality depends on SillyTavern's implementation
-            // If SillyTavern doesn't support unregistering, this would be a no-op
-            const result = (globalThis as any).SlashCommandParser.removeCommand
-                ? (globalThis as any).SlashCommandParser.removeCommand(name)
-                : false;
-
-            if (result) {
-                this.logger.info(`Slash command unregistered: /${name}`);
-            } else {
-                this.logger.warn(`Could not unregister slash command: /${name} (method may not be supported)`);
-            }
-
-            return result;
-        } catch (error) {
-            this.logger.error(`Failed to unregister slash command /${name}:`, error);
-            return false;
-        }
-    }
-
-    /**
-     * Execute a slash command programmatically
-     * @param commandString The full command string (e.g. "/help test")
-     */
-    public async executeSlashCommand(commandString: string): Promise<any> {
-        try {
-            if (!this.isSlashCommandSystemAvailable()) {
-                throw new Error('Slash command system not available');
-            }
-
-            // Execute the command using SillyTavern's system
-            const result = await (globalThis as any).SlashCommandParser.executeCommand(commandString);
-            return result;
-        } catch (error) {
-            this.logger.error(`Failed to execute slash command "${commandString}":`, error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get list of currently registered commands (if supported by SillyTavern)
-     */
-    public getRegisteredCommands(): string[] {
-        try {
-            if (!this.isSlashCommandSystemAvailable()) {
-                return [];
-            }
-
-            // This depends on SillyTavern's implementation
-            if ((globalThis as any).SlashCommandParser.getCommands) {
-                const commands = (globalThis as any).SlashCommandParser.getCommands();
-                return Array.isArray(commands) ? commands.map((cmd: any) => cmd.name) : [];
-            }
-
-            return [];
-        } catch (error) {
-            this.logger.error('Failed to get registered commands:', error);
-            return [];
-        }
     }
 }
 

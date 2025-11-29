@@ -103,6 +103,14 @@ export class Logger {
     }
 
     /**
+     * Gets the default log level used when creating new Logger instances
+     * @returns {LogLevel} The default log level
+     */
+    static getDefaultLogLevel(): LogLevel {
+        return LogLevel.INFO;
+    }
+
+    /**
      * Formats a log message with timestamp, prefix, and level
      * @private
      * @param {string} level - The log level (DEBUG, INFO, WARN, ERROR)

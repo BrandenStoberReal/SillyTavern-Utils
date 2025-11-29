@@ -4,8 +4,7 @@ A Typescript utility library for SillyTavern.
 
 ## Installation
 
-To install the library, you can clone the repository and build it yourself, or you can install it from NPM (once it's
-published).
+To install the library, you can clone the repository and build it yourself, or you can install it from NPM.
 
 ```bash
 npm install sillytavern-utils
@@ -16,9 +15,15 @@ npm install sillytavern-utils
 You can import the utilities from the library like this:
 
 ```typescript
-import {tostr} from 'sillytavern-utils';
+import {AddCheckbox} from 'sillytavern-utils';
 
-toastr.success('Hello, world!');
+AddCheckbox(parentElement, {
+    id: `cool-checkbox`,
+    label: 'My Cool Checkbox',
+    labelClass: 'normal',
+    description: 'A very cool checkbox for very cool things',
+    value: false,
+}, (value) => console.log('Cool checkbox changed state to: ' + value));
 ```
 
 ## Building from source

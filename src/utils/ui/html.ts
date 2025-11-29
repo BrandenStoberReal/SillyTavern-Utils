@@ -54,6 +54,11 @@ export interface HeaderButtonOptions {
     position?: HeaderButtonPosition;
 }
 
+/**
+ * Creates a wrapper element for UI components with configurable options.
+ * @param {BaseOptions} options - The options for configuring the wrapper element
+ * @returns {HTMLElement} The created wrapper element
+ */
 export function createWrapper(options: BaseOptions): HTMLElement {
     const wrapper = document.createElement('div');
     wrapper.classList.add('st-outfits-option');
@@ -66,6 +71,13 @@ export function createWrapper(options: BaseOptions): HTMLElement {
     return wrapper;
 }
 
+/**
+ * Creates a label element associated with a form control.
+ * @param {string} forId - The ID of the form control this label is associated with
+ * @param {string} text - The text content of the label
+ * @param {string} [labelClass] - Optional CSS class to add to the label
+ * @returns {HTMLLabelElement} The created label element
+ */
 export function createLabel(
     forId: string,
     text: string,
@@ -80,6 +92,11 @@ export function createLabel(
     return label;
 }
 
+/**
+ * Creates a description element for UI components.
+ * @param {string} text - The text content of the description
+ * @returns {HTMLElement} The created description element
+ */
 export function createDescription(text: string): HTMLElement {
     const description = document.createElement('p');
     description.classList.add('st-outfits-option-description');
@@ -87,6 +104,13 @@ export function createDescription(text: string): HTMLElement {
     return description;
 }
 
+/**
+ * Adds a checkbox element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the checkbox to
+ * @param {CheckboxOptions} options - The options for configuring the checkbox
+ * @param {function(boolean): void} callback - The callback function to execute when the checkbox value changes
+ * @returns {HTMLInputElement} The created checkbox input element
+ */
 export function AddCheckbox(
     parent: HTMLElement,
     options: CheckboxOptions,
@@ -135,6 +159,13 @@ export function AddCheckbox(
     return checkbox;
 }
 
+/**
+ * Adds a textbox element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the textbox to
+ * @param {TextboxOptions} options - The options for configuring the textbox
+ * @param {function(string): void} callback - The callback function to execute when the textbox value changes
+ * @returns {HTMLInputElement} The created textbox input element
+ */
 export function AddTextbox(
     parent: HTMLElement,
     options: TextboxOptions,
@@ -178,6 +209,13 @@ export function AddTextbox(
     return textbox;
 }
 
+/**
+ * Adds a button element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the button to
+ * @param {ButtonOptions} options - The options for configuring the button
+ * @param {function(MouseEvent): void} callback - The callback function to execute when the button is clicked
+ * @returns {HTMLButtonElement} The created button element
+ */
 export function AddButton(
     parent: HTMLElement,
     options: ButtonOptions,
@@ -217,6 +255,12 @@ export function AddButton(
     return button;
 }
 
+/**
+ * Creates an icon element using Font Awesome classes.
+ * @param {string} iconName - The name of the Font Awesome icon
+ * @param {string} [iconClass] - Optional additional CSS classes to add to the icon
+ * @returns {HTMLElement} The created icon element
+ */
 export function createIcon(iconName: string, iconClass?: string): HTMLElement {
     const icon = document.createElement('i');
     icon.classList.add('fa-solid', `fa-${iconName}`);
@@ -226,6 +270,13 @@ export function createIcon(iconName: string, iconClass?: string): HTMLElement {
     return icon;
 }
 
+/**
+ * Adds an icon button element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the icon button to
+ * @param {IconButtonOptions} options - The options for configuring the icon button
+ * @param {function(MouseEvent): void} callback - The callback function to execute when the button is clicked
+ * @returns {HTMLButtonElement} The created icon button element
+ */
 export function AddIconButton(
     parent: HTMLElement,
     options: IconButtonOptions,
@@ -278,6 +329,12 @@ export function AddIconButton(
     return button;
 }
 
+/**
+ * Adds a group element (fieldset) to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the group to
+ * @param {GroupOptions} options - The options for configuring the group
+ * @returns {HTMLElement} The created fieldset element
+ */
 export function AddGroup(
     parent: HTMLElement,
     options: GroupOptions,
@@ -303,6 +360,12 @@ export function AddGroup(
     return fieldset;
 }
 
+/**
+ * Adds a gallery container element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the gallery container to
+ * @param {BaseOptions} options - The options for configuring the gallery container
+ * @returns {HTMLElement} The created gallery container element
+ */
 export function AddGalleryContainer(
     parent: HTMLElement,
     options: BaseOptions,
@@ -319,6 +382,12 @@ export function AddGalleryContainer(
     return gallery;
 }
 
+/**
+ * Adds a vertical container element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the vertical container to
+ * @param {BaseOptions} options - The options for configuring the vertical container
+ * @returns {HTMLElement} The created vertical container element
+ */
 export function AddVerticalContainer(
     parent: HTMLElement,
     options: BaseOptions,
@@ -335,6 +404,12 @@ export function AddVerticalContainer(
     return group;
 }
 
+/**
+ * Adds a horizontal container element to the specified parent element.
+ * @param {HTMLElement} parent - The parent element to append the horizontal container to
+ * @param {BaseOptions} options - The options for configuring the horizontal container
+ * @returns {HTMLElement} The created horizontal container element
+ */
 export function AddHorizontalContainer(
     parent: HTMLElement,
     options: BaseOptions,
@@ -352,9 +427,9 @@ export function AddHorizontalContainer(
 }
 
 /**
- * Adds a button to the top header.
- * @param {HeaderButtonOptions} options - The options for the button.
- * @returns {{content: HTMLElement, remove: () => void}} An object containing the drawer content element and a function to remove the button.
+ * Adds a header button with a drawer functionality to the top header.
+ * @param {HeaderButtonOptions} options - The options for configuring the header button
+ * @returns {{content: HTMLElement, remove: () => void}} An object containing the drawer content element and a function to remove the button
  */
 export function AddHeaderButton(options: HeaderButtonOptions): {
     content: HTMLElement;

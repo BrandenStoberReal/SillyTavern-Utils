@@ -4,16 +4,11 @@ import {ISillyTavernContext} from '../types';
  * Context utility for interacting with SillyTavern context and reading specific data
  */
 export class ContextUtil {
-    private static _instance: ContextUtil;
-
     /**
-     * Get the singleton instance of ContextUtil
+     * Create a new instance of ContextUtil
      */
-    public static getInstance(): ContextUtil {
-        if (!ContextUtil._instance) {
-            ContextUtil._instance = new ContextUtil();
-        }
-        return ContextUtil._instance;
+    constructor() {
+        // No initialization needed
     }
 
     /**
@@ -21,31 +16,10 @@ export class ContextUtil {
      * @returns Promise resolving to the current context
      */
     public async fetchSillyTavernContext(): Promise<ISillyTavernContext> {
-        // Try to get the context from the global window object
-        if (typeof window !== 'undefined' && (window as any).SillyTavern) {
-            const context = (window as any).SillyTavern;
-            if (context) {
-                return context;
-            }
-        }
-
-        // Try to get the context from the context property if available
-        if (typeof window !== 'undefined' && (window as any).context) {
-            const context = (window as any).context;
-            if (context) {
-                return context;
-            }
-        }
-
-        // For server-side or when context is not available globally, try to import dynamically
-        // This might be called from an extension or different context
         try {
-            // Attempt to access the context in different possible locations
-            if (typeof global !== 'undefined' && (global as any).SillyTavern) {
-                const context = (global as any).SillyTavern;
-                if (context) {
-                    return context;
-                }
+            const context = SillyTavern.getContext();
+            if (context) {
+                return context;
             }
         } catch (error) {
             console.warn('Could not access global context:', error);
@@ -59,6 +33,9 @@ export class ContextUtil {
      */
     public async getChat(): Promise<ISillyTavernContext['chat']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.chat === undefined) {
+            throw new Error('Chat data is not available in the current context');
+        }
         return context.chat;
     }
 
@@ -67,6 +44,9 @@ export class ContextUtil {
      */
     public async getCharacters(): Promise<ISillyTavernContext['characters']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.characters === undefined) {
+            throw new Error('Characters data is not available in the current context');
+        }
         return context.characters;
     }
 
@@ -75,6 +55,9 @@ export class ContextUtil {
      */
     public async getGroups(): Promise<ISillyTavernContext['groups']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.groups === undefined) {
+            throw new Error('Groups data is not available in the current context');
+        }
         return context.groups;
     }
 
@@ -83,6 +66,9 @@ export class ContextUtil {
      */
     public async getUserName(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.name1 === undefined) {
+            throw new Error('User name is not available in the current context');
+        }
         return context.name1;
     }
 
@@ -91,6 +77,9 @@ export class ContextUtil {
      */
     public async getCharacterName(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.name2 === undefined) {
+            throw new Error('Character name is not available in the current context');
+        }
         return context.name2;
     }
 
@@ -99,6 +88,9 @@ export class ContextUtil {
      */
     public async getCharacterId(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.characterId === undefined) {
+            throw new Error('Character ID is not available in the current context');
+        }
         return context.characterId;
     }
 
@@ -107,6 +99,9 @@ export class ContextUtil {
      */
     public async getGroupId(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.groupId === undefined) {
+            throw new Error('Group ID is not available in the current context');
+        }
         return context.groupId;
     }
 
@@ -115,6 +110,9 @@ export class ContextUtil {
      */
     public async getChatId(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.chatId === undefined) {
+            throw new Error('Chat ID is not available in the current context');
+        }
         return context.chatId;
     }
 
@@ -123,6 +121,9 @@ export class ContextUtil {
      */
     public async getMaxContext(): Promise<number> {
         const context = await this.fetchSillyTavernContext();
+        if (context.maxContext === undefined) {
+            throw new Error('Max context length is not available in the current context');
+        }
         return context.maxContext;
     }
 
@@ -131,6 +132,9 @@ export class ContextUtil {
      */
     public async getChatMetadata(): Promise<any> {
         const context = await this.fetchSillyTavernContext();
+        if (context.chatMetadata === undefined) {
+            throw new Error('Chat metadata is not available in the current context');
+        }
         return context.chatMetadata;
     }
 
@@ -139,6 +143,9 @@ export class ContextUtil {
      */
     public async getExtensionSettings(): Promise<ISillyTavernContext['extensionSettings']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.extensionSettings === undefined) {
+            throw new Error('Extension settings are not available in the current context');
+        }
         return context.extensionSettings;
     }
 
@@ -154,24 +161,39 @@ export class ContextUtil {
      * Get specific chat message by index
      */
     public async getChatMessage(index: number): Promise<ISillyTavernContext['chat'][0] | undefined> {
-        const chat = await this.getChat();
-        return chat[index];
+        try {
+            const chat = await this.getChat();
+            return chat[index];
+        } catch (error) {
+            console.warn(`Could not get chat message at index ${index}:`, error);
+            return undefined;
+        }
     }
 
     /**
      * Get the last chat message
      */
     public async getLastMessage(): Promise<ISillyTavernContext['chat'][0] | undefined> {
-        const chat = await this.getChat();
-        return chat.length > 0 ? chat[chat.length - 1] : undefined;
+        try {
+            const chat = await this.getChat();
+            return chat.length > 0 ? chat[chat.length - 1] : undefined;
+        } catch (error) {
+            console.warn('Could not get last chat message:', error);
+            return undefined;
+        }
     }
 
     /**
      * Get a character by ID (which is the array index as integer)
      */
     public async getCharacterById(id: number): Promise<ISillyTavernContext['characters'][0] | undefined> {
-        const characters = await this.getCharacters();
-        return characters[id];
+        try {
+            const characters = await this.getCharacters();
+            return characters[id];
+        } catch (error) {
+            console.warn(`Could not get character with ID ${id}:`, error);
+            return undefined;
+        }
     }
 
     /**
@@ -179,6 +201,9 @@ export class ContextUtil {
      */
     public async getMenuType(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (context.menuType === undefined) {
+            throw new Error('Menu type is not available in the current context');
+        }
         return context.menuType;
     }
 
@@ -187,8 +212,10 @@ export class ContextUtil {
      */
     public async reloadCurrentChat(): Promise<void> {
         const context = await this.fetchSillyTavernContext();
-        if (context.reloadCurrentChat) {
+        if (typeof context.reloadCurrentChat === 'function') {
             await context.reloadCurrentChat();
+        } else {
+            throw new Error('reloadCurrentChat function is not available in the current context');
         }
     }
 
@@ -197,6 +224,9 @@ export class ContextUtil {
      */
     public async getChatCompletionSettings(): Promise<ISillyTavernContext['chatCompletionSettings']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.chatCompletionSettings === undefined) {
+            throw new Error('Chat completion settings are not available in the current context');
+        }
         return context.chatCompletionSettings;
     }
 
@@ -205,6 +235,9 @@ export class ContextUtil {
      */
     public async getTextCompletionSettings(): Promise<ISillyTavernContext['textCompletionSettings']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.textCompletionSettings === undefined) {
+            throw new Error('Text completion settings are not available in the current context');
+        }
         return context.textCompletionSettings;
     }
 
@@ -213,6 +246,9 @@ export class ContextUtil {
      */
     public async getPowerUserSettings(): Promise<ISillyTavernContext['powerUserSettings']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.powerUserSettings === undefined) {
+            throw new Error('Power user settings are not available in the current context');
+        }
         return context.powerUserSettings;
     }
 
@@ -221,6 +257,9 @@ export class ContextUtil {
      */
     public async getTags(): Promise<ISillyTavernContext['tags']> {
         const context = await this.fetchSillyTavernContext();
+        if (context.tags === undefined) {
+            throw new Error('Tags are not available in the current context');
+        }
         return context.tags;
     }
 
@@ -229,6 +268,9 @@ export class ContextUtil {
      */
     public async getCurrentLocale(): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (typeof context.getCurrentLocale !== 'function') {
+            throw new Error('getCurrentLocale function is not available in the current context');
+        }
         return context.getCurrentLocale();
     }
 
@@ -237,6 +279,9 @@ export class ContextUtil {
      */
     public async getTokenCount(str: string, padding?: number): Promise<number> {
         const context = await this.fetchSillyTavernContext();
+        if (typeof context.getTokenCount !== 'function') {
+            throw new Error('getTokenCount function is not available in the current context');
+        }
         return context.getTokenCount(str, padding);
     }
 
@@ -254,6 +299,9 @@ export class ContextUtil {
         postProcessFn?: (x: any) => any
     ): Promise<string> {
         const context = await this.fetchSillyTavernContext();
+        if (typeof context.substituteParams !== 'function') {
+            throw new Error('substituteParams function is not available in the current context');
+        }
         return context.substituteParams(
             content,
             _name1,
@@ -267,8 +315,8 @@ export class ContextUtil {
     }
 }
 
-// Export a singleton instance for convenience
-export const contextUtil = ContextUtil.getInstance();
+// Export a default instance for convenience
+export const contextUtil = new ContextUtil();
 
 // Export type for backward compatibility if needed
 export type {ISillyTavernContext};

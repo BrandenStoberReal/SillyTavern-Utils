@@ -1,27 +1,17 @@
 import {Logger} from '../logging/logger';
+import type * as SillyTavern from '../../types/SillyTavern';
 
 /**
  * Slash Commands utility for registering and managing SillyTavern slash commands
  */
 export class SlashCommandsUtil {
-    private static _instance: SlashCommandsUtil;
     private logger: Logger;
 
-    private constructor() {
-        this.logger = new Logger({
-            prefix: 'SlashCommandsUtil',
+    constructor(options?: { logger?: Logger; prefix?: string }) {
+        this.logger = options?.logger ?? new Logger({
+            prefix: options?.prefix ?? 'SlashCommandsUtil',
             level: Logger.getDefaultLogLevel(),
         });
-    }
-
-    /**
-     * Get the singleton instance of SlashCommandsUtil
-     */
-    public static getInstance(): SlashCommandsUtil {
-        if (!SlashCommandsUtil._instance) {
-            SlashCommandsUtil._instance = new SlashCommandsUtil();
-        }
-        return SlashCommandsUtil._instance;
     }
 
     /**
@@ -32,7 +22,10 @@ export class SlashCommandsUtil {
      */
     public registerSlashCommand(
         name: string,
-        callback: (namedArgs: any, unnamedArgs: any, ...additionalArgs: any[]) => any,
+        callback: (
+            args: SillyTavern.NamedArguments,
+            text: SillyTavern.UnnamedArguments,
+        ) => string | Promise<string>,
         options?: {
             aliases?: string[];
             returns?: string;
@@ -78,7 +71,10 @@ export class SlashCommandsUtil {
     public registerMultipleSlashCommands(
         commands: {
             name: string;
-            callback: (namedArgs: any, unnamedArgs: any, ...additionalArgs: any[]) => any;
+            callback: (
+                args: SillyTavern.NamedArguments,
+                text: SillyTavern.UnnamedArguments,
+            ) => string | Promise<string>;
             options?: {
                 aliases?: string[];
                 returns?: string;
@@ -114,7 +110,91 @@ export class SlashCommandsUtil {
             failedCommands,
         };
     }
+
+    /**
+     * Unregister a slash command
+     * @param name The command name (without the slash) to unregister
+     */
+    public unregisterSlashCommand(name: string): boolean {
+        try {
+            // Check if SillyTavern's slash command system is available
+            if (
+                typeof (globalThis as any).SlashCommandParser === 'undefined' ||
+                typeof (globalThis as any).SlashCommand === 'undefined'
+            ) {
+                this.logger.warn(`Slash command system not available, cannot unregister: /${name}`);
+                return false;
+            }
+
+            // Remove the command from the parser
+            const success = (globalThis as any).SlashCommandParser.removeCommand(name);
+
+            if (success) {
+                this.logger.info(`Slash command unregistered: /${name}`);
+            } else {
+                this.logger.warn(`Failed to unregister slash command: /${name} (not found)`);
+            }
+
+            return success;
+        } catch (error) {
+            this.logger.error(`Failed to unregister slash command /${name}:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Unregister multiple slash commands at once
+     * @param commandNames Array of command names to unregister
+     */
+    public unregisterMultipleSlashCommands(names: string[]): {
+        success: number;
+        failed: number;
+        failedCommands: string[]
+    } {
+        let successCount = 0;
+        const failedCommands: string[] = [];
+
+        for (const name of names) {
+            const result = this.unregisterSlashCommand(name);
+
+            if (result) {
+                successCount++;
+            } else {
+                failedCommands.push(name);
+            }
+        }
+
+        this.logger.info(
+            `Unregistered ${successCount} slash commands, ${failedCommands.length} failed: [${failedCommands.join(', ')}]`
+        );
+
+        return {
+            success: successCount,
+            failed: failedCommands.length,
+            failedCommands,
+        };
+    }
+
+    /**
+     * Get all registered slash commands
+     */
+    public getAllCommands(): SillyTavern.SlashCommand[] {
+        try {
+            if (
+                typeof (globalThis as any).SlashCommandParser === 'undefined' ||
+                typeof (globalThis as any).SlashCommandParser.commands === 'undefined'
+            ) {
+                this.logger.warn('Slash command system not available');
+                return [];
+            }
+
+            return (globalThis as any).SlashCommandParser.commands;
+        } catch (error) {
+            this.logger.error('Failed to get registered slash commands:', error);
+            return [];
+        }
+    }
 }
 
-// Export a singleton instance for convenience
-export const slashCommandsUtil = SlashCommandsUtil.getInstance();
+// Export a default instance for backward compatibility
+export const slashCommandsUtil = new SlashCommandsUtil();

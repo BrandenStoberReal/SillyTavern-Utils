@@ -11,20 +11,7 @@ npm install sillytavern-utils
 ```
 
 ## Usage
-
-You can import the utilities from the library like this:
-
-```typescript
-import {AddCheckbox} from 'sillytavern-utils';
-
-AddCheckbox(parentElement, {
-    id: `cool-checkbox`,
-    label: 'My Cool Checkbox',
-    labelClass: 'normal',
-    description: 'A very cool checkbox for very cool things',
-    value: false,
-}, (value) => console.log('Cool checkbox changed state to: ' + value));
-```
+Please review the wiki at the top of this page for examples and documentation. 
 
 ## Building from source
 

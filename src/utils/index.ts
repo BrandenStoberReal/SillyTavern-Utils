@@ -1,3 +1,3 @@
-export * from './html';
-export * from './logger';
-export * from './toastr';
+export * from './ui/html';
+export * from './logging/logger';
+export * from './ui/toastr';

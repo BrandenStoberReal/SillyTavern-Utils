@@ -6,16 +6,16 @@
 export interface Character {
     id: string;
     name: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string; // ISO date string
+    updatedAt: string; // ISO date string
 }
 
 export interface Instance {
     id: string;
     characterId: string;
     name: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string; // ISO date string
+    updatedAt: string; // ISO date string
 }
 
 export interface FullCharacter {
@@ -43,6 +43,17 @@ export interface CreateInstanceRequest {
     name: string;
 }
 
+export interface UpdateCharacterRequest {
+    id: string;
+    name?: string;
+}
+
+export interface UpdateInstanceRequest {
+    id: string;
+    characterId?: string;
+    name?: string;
+}
+
 export interface CreateInstanceDataRequest {
     key: string;
     value: any;
@@ -52,43 +63,46 @@ export interface OverrideInstanceDataRequest {
     [key: string]: any;
 }
 
+export interface UpdateInstanceDataRequest {
+    [key: string]: any;
+}
+
 export interface RemoveInstanceDataRequest {
     keys: string[];
 }
 
-export interface ErrorResponse {
-    success?: boolean;
+export interface BaseResponse {
+    success: boolean;
     message?: string;
+}
+
+export interface ErrorResponse {
+    success: false;
+    message: string;
     code?: number;
 }
 
-export interface RegistrationResponse {
-    success: boolean;
+export interface RegistrationResponse extends BaseResponse {
+    success: true;
     message: string;
 }
 
-export interface SuccessResponse {
-    success: boolean;
+export interface SuccessResponse extends BaseResponse {
 }
 
-export interface DeleteAllInstancesResponse {
-    success: boolean;
+export interface DeleteAllInstancesResponse extends BaseResponse {
     deletedCount: number;
 }
 
-export interface CreateOrUpdateInstanceDataResponse {
-    success: boolean;
+export interface CreateOrUpdateInstanceDataResponse extends BaseResponse {
     key: string;
     value: any;
 }
 
-export interface OverrideInstanceDataResponse {
-    success: boolean;
-    message: string;
+export interface OverrideInstanceDataResponse extends BaseResponse {
 }
 
-export interface RemoveInstanceDataResponse {
-    success: boolean;
+export interface RemoveInstanceDataResponse extends BaseResponse {
     removedCount: number;
 }
 

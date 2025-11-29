@@ -34,10 +34,24 @@ import {
     RemoveInstanceDataKeysResult
 } from './types';
 
+// Custom error class for ValueTracker API errors
+export class ValueTrackerError extends Error {
+    public readonly statusCode?: number;
+    public readonly details?: any;
+
+    constructor(message: string, statusCode?: number, details?: any) {
+        super(message);
+        this.name = 'ValueTrackerError';
+        this.statusCode = statusCode;
+        this.details = details;
+    }
+}
+
 // Main ValueTracker API class
 export class ValueTrackerAPI {
     private baseUrl: string;
     private extensionId?: string;
+    private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
 
     constructor(extensionId?: string) {
         this.baseUrl = '/api/plugins/valuetracker';
@@ -50,6 +64,23 @@ export class ValueTrackerAPI {
      */
     setExtensionId(extensionId: string): void {
         this.extensionId = extensionId;
+    }
+
+    /**
+     * Clear the internal cache
+     */
+    clearCache(): void {
+        this.cache.clear();
+    }
+
+    /**
+     * Remove specific cache entries
+     * @param keys The keys to remove from cache
+     */
+    removeCacheEntries(...keys: string[]): void {
+        for (const key of keys) {
+            this.cache.delete(key);
+        }
     }
 
     /**
@@ -66,13 +97,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to the registration response
      */
     async registerExtension(extensionId: string): Promise<RegistrationResponse> {
+        const headers = await this.getSillyTavernHeaders();
+        headers['Content-Type'] = 'application/json';
+
         return this.apiRequest('/register', {
             method: 'POST',
+            headers,
             body: JSON.stringify({extensionId})
         }, false); // Registration doesn't require extension ID header
     }
-
-    // Extension Registration Methods
 
     /**
      * Deregister an extension from the ValueTracker plugin
@@ -80,10 +113,19 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to the deregistration response
      */
     async deregisterExtension(extensionId: string): Promise<RegistrationResponse> {
-        return this.apiRequest('/register', {
+        const headers = await this.getSillyTavernHeaders();
+        headers['Content-Type'] = 'application/json';
+
+        const result = await this.apiRequest<RegistrationResponse>('/register', {
             method: 'DELETE',
+            headers,
             body: JSON.stringify({extensionId})
         }, false); // Deregistration doesn't require extension ID header
+
+        // Clear cache on deregistration
+        this.clearCache();
+
+        return result;
     }
 
     /**
@@ -91,10 +133,16 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to an array of Character objects
      */
     async getAllCharacters(): Promise<GetAllCharactersResult> {
-        return this.apiRequest('/characters');
-    }
+        const cacheKey = 'all-characters';
+        const cached = this.getFromCache<GetAllCharactersResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
 
-    // Character Management Methods
+        const result = await this.apiRequest<GetAllCharactersResult>('/characters');
+        this.setCache(cacheKey, result);
+        return result;
+    }
 
     /**
      * Get a specific character by ID
@@ -102,7 +150,17 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a FullCharacter object
      */
     async getCharacter(id: string): Promise<GetCharacterResult> {
-        return this.apiRequest(`/characters/${id}`);
+        this.validateId(id, 'character id');
+
+        const cacheKey = `character:${id}`;
+        const cached = this.getFromCache<GetCharacterResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const result = await this.apiRequest<GetCharacterResult>(`/characters/${id}`);
+        this.setCache(cacheKey, result);
+        return result;
     }
 
     /**
@@ -111,10 +169,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to the created/updated Character object
      */
     async createOrUpdateCharacter(characterData: CreateCharacterRequest): Promise<CreateOrUpdateCharacterResult> {
-        return this.apiRequest('/characters', {
+        const result = await this.apiRequest<CreateOrUpdateCharacterResult>('/characters', {
             method: 'POST',
             body: JSON.stringify(characterData)
         });
+
+        // Invalidate related cache entries
+        this.removeCacheEntries('all-characters', `character:${characterData.id}`);
+
+        return result;
     }
 
     /**
@@ -123,9 +186,14 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async deleteCharacter(id: string): Promise<DeleteCharacterResult> {
-        return this.apiRequest(`/characters/${id}`, {
+        const result = await this.apiRequest<DeleteCharacterResult>(`/characters/${id}`, {
             method: 'DELETE'
         });
+
+        // Invalidate related cache entries
+        this.removeCacheEntries('all-characters', `character:${id}`, `instances:${id}`);
+
+        return result;
     }
 
     /**
@@ -134,10 +202,18 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to an array of Instance objects
      */
     async getAllInstancesForCharacter(characterId: string): Promise<GetAllInstancesForCharacterResult> {
-        return this.apiRequest(`/characters/${characterId}/instances`);
+        const cacheKey = `instances:${characterId}`;
+        const cached = this.getFromCache<GetAllInstancesForCharacterResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const result = await this.apiRequest<GetAllInstancesForCharacterResult>(`/characters/${characterId}/instances`);
+        this.setCache(cacheKey, result);
+        return result;
     }
 
-    // Instance Management Methods
+    // Extension Registration Methods
 
     /**
      * Get a specific instance by ID
@@ -145,7 +221,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a FullInstance object
      */
     async getInstance(id: string): Promise<GetInstanceResult> {
-        return this.apiRequest(`/instances/${id}`);
+        const cacheKey = `instance:${id}`;
+        const cached = this.getFromCache<GetInstanceResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const result = await this.apiRequest<GetInstanceResult>(`/instances/${id}`);
+        this.setCache(cacheKey, result);
+        return result;
     }
 
     /**
@@ -154,11 +238,22 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to the created/updated Instance object
      */
     async createOrUpdateInstance(instanceData: CreateInstanceRequest): Promise<CreateOrUpdateInstanceResult> {
-        return this.apiRequest('/instances', {
+        const result = await this.apiRequest<CreateOrUpdateInstanceResult>('/instances', {
             method: 'POST',
             body: JSON.stringify(instanceData)
         });
+
+        // Invalidate related cache entries
+        this.removeCacheEntries(
+            `instance:${instanceData.id}`,
+            `instances:${instanceData.characterId}`,
+            `character:${instanceData.characterId}`
+        );
+
+        return result;
     }
+
+    // Character Management Methods
 
     /**
      * Delete an instance by ID
@@ -166,9 +261,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async deleteInstance(id: string): Promise<DeleteInstanceResult> {
-        return this.apiRequest(`/instances/${id}`, {
+        const result = await this.apiRequest<DeleteInstanceResult>(`/instances/${id}`, {
             method: 'DELETE'
         });
+
+        // Find the characterId for this instance to invalidate the correct cache
+        // Since we don't have the characterId here, we'll clear the instance data cache
+        this.removeCacheEntries(`instance:${id}`, `instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -177,9 +278,14 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response with deleted count
      */
     async deleteAllInstancesForCharacter(characterId: string): Promise<DeleteAllInstancesForCharacterResult> {
-        return this.apiRequest(`/characters/${characterId}/instances`, {
+        const result = await this.apiRequest<DeleteAllInstancesForCharacterResult>(`/characters/${characterId}/instances`, {
             method: 'DELETE'
         });
+
+        // Invalidate related cache entries
+        this.removeCacheEntries(`instances:${characterId}`);
+
+        return result;
     }
 
     /**
@@ -188,10 +294,16 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a record containing all key-value pairs
      */
     async getInstanceData(id: string): Promise<GetInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data`);
-    }
+        const cacheKey = `instance-data:${id}`;
+        const cached = this.getFromCache<GetInstanceDataResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
 
-    // Data Management Methods
+        const result = await this.apiRequest<GetInstanceDataResult>(`/instances/${id}/data`);
+        this.setCache(cacheKey, result);
+        return result;
+    }
 
     /**
      * Get a specific data key for an instance
@@ -200,8 +312,18 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to an object with the key-value pair
      */
     async getInstanceDataKey(id: string, key: string): Promise<GetInstanceDataKeyResult> {
-        return this.apiRequest(`/instances/${id}/data/${key}`);
+        const cacheKey = `instance-data-key:${id}:${key}`;
+        const cached = this.getFromCache<GetInstanceDataKeyResult>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const result = await this.apiRequest<GetInstanceDataKeyResult>(`/instances/${id}/data/${key}`);
+        this.setCache(cacheKey, result);
+        return result;
     }
+
+    // Instance Management Methods
 
     /**
      * Create or update a data key-value pair for an instance
@@ -211,10 +333,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response with the key and value
      */
     async createOrUpdateInstanceData(id: string, key: string, value: any): Promise<CreateOrUpdateInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data`, {
+        const result = await this.apiRequest<CreateOrUpdateInstanceDataResult>(`/instances/${id}/data`, {
             method: 'POST',
             body: JSON.stringify({key, value})
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -225,10 +352,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response with the key and value
      */
     async createOrUpdateInstanceDataAlt(id: string, key: string, value: any): Promise<CreateOrUpdateInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data`, {
+        const result = await this.apiRequest<CreateOrUpdateInstanceDataResult>(`/instances/${id}/data`, {
             method: 'PUT',
             body: JSON.stringify({key, value})
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -238,9 +370,14 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async deleteInstanceDataKey(id: string, key: string): Promise<DeleteInstanceDataKeyResult> {
-        return this.apiRequest(`/instances/${id}/data/${key}`, {
+        const result = await this.apiRequest<DeleteInstanceDataKeyResult>(`/instances/${id}/data/${key}`, {
             method: 'DELETE'
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -249,9 +386,14 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async clearInstanceData(id: string): Promise<ClearInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data`, {
+        const result = await this.apiRequest<ClearInstanceDataResult>(`/instances/${id}/data`, {
             method: 'DELETE'
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -261,13 +403,18 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async overrideInstanceData(id: string, data: OverrideInstanceDataRequest): Promise<OverrideInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data/override`, {
+        const result = await this.apiRequest<OverrideInstanceDataResult>(`/instances/${id}/data/override`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
-    // Complex Operations
+    // Data Management Methods
 
     /**
      * Merge new data with existing data for an instance
@@ -276,10 +423,15 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response
      */
     async mergeInstanceData(id: string, data: OverrideInstanceDataRequest): Promise<MergeInstanceDataResult> {
-        return this.apiRequest(`/instances/${id}/data/merge`, {
+        const result = await this.apiRequest<MergeInstanceDataResult>(`/instances/${id}/data/merge`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
     }
 
     /**
@@ -289,10 +441,106 @@ export class ValueTrackerAPI {
      * @returns Promise resolving to a success response with removed count
      */
     async removeInstanceDataKeys(id: string, keys: string[]): Promise<RemoveInstanceDataKeysResult> {
-        return this.apiRequest(`/instances/${id}/data/remove`, {
+        const result = await this.apiRequest<RemoveInstanceDataKeysResult>(`/instances/${id}/data/remove`, {
             method: 'PUT',
             body: JSON.stringify({keys})
         });
+
+        // Invalidate instance data cache
+        this.removeCacheEntries(`instance-data:${id}`);
+
+        return result;
+    }
+
+    /**
+     * Get data from cache if available and not expired
+     * @param key The cache key
+     * @returns The cached data or undefined if not available or expired
+     */
+    private getFromCache<T>(key: string): T | undefined {
+        const cached = this.cache.get(key);
+        if (cached && Date.now() - cached.timestamp < cached.ttl) {
+            return cached.data as T;
+        }
+        // Remove expired entry
+        if (cached) {
+            this.cache.delete(key);
+        }
+        return undefined;
+    }
+
+    /**
+     * Store data in cache
+     * @param key The cache key
+     * @param data The data to cache
+     * @param ttl Time to live in milliseconds (default: 5 minutes)
+     */
+    private setCache<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void { // 5 minutes default
+        this.cache.set(key, {
+            data,
+            timestamp: Date.now(),
+            ttl
+        });
+    }
+
+    /**
+     * Validates an ID parameter
+     * @param id The ID to validate
+     * @param paramName The name of the parameter for error messages
+     */
+    private validateId(id: string, paramName: string = 'id'): void {
+        if (!id || typeof id !== 'string' || id.trim().length === 0) {
+            throw new ValueTrackerError(`Invalid ${paramName}: must be a non-empty string`);
+        }
+    }
+
+    /**
+     * Validates a key parameter
+     * @param key The key to validate
+     */
+    private validateKey(key: string): void {
+        if (!key || typeof key !== 'string' || key.trim().length === 0) {
+            throw new ValueTrackerError('Invalid key: must be a non-empty string');
+        }
+    }
+
+    // Complex Operations
+
+    /**
+     * Validates extension ID
+     * @param extensionId The extension ID to validate
+     */
+    private validateExtensionId(extensionId: string): void {
+        if (!extensionId || typeof extensionId !== 'string' || extensionId.trim().length === 0) {
+            throw new ValueTrackerError('Invalid extensionId: must be a non-empty string');
+        }
+    }
+
+    /**
+     * Gets the default headers from SillyTavern context
+     * @returns Promise resolving to the default headers object
+     */
+    private async getSillyTavernHeaders(): Promise<Record<string, string>> {
+        try {
+            // Access the global SillyTavern context to get default headers
+            if (typeof (window as any).SillyTavern === 'object' &&
+                typeof (window as any).SillyTavern.getRequestHeaders === 'function') {
+                return (window as any).SillyTavern.getRequestHeaders();
+            } else {
+                // Fallback to basic headers if SillyTavern context is not available
+                return {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+            }
+        } catch (error) {
+            logError('Could not get SillyTavern headers, using fallback headers:', error);
+            // Return basic fallback headers
+            return {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+        }
     }
 
     /**
@@ -371,13 +619,22 @@ export class ValueTrackerAPI {
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
 
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-            ...options.headers,
+        // Validate endpoint parameter
+        if (!endpoint || typeof endpoint !== 'string') {
+            throw new ValueTrackerError('Invalid endpoint parameter');
+        }
+
+        // Get default headers from SillyTavern context
+        const defaultHeaders = await this.getSillyTavernHeaders();
+
+        // Build headers with SillyTavern defaults as base, then override with options
+        const headers: Record<string, string> = {
+            ...defaultHeaders,
+            ...(options.headers as Record<string, string> || {}),
         };
 
         if (includeExtensionId && this.extensionId) {
-            (headers as Record<string, string>)['x-extension-id'] = this.extensionId;
+            headers['x-extension-id'] = this.extensionId;
         }
 
         try {
@@ -388,14 +645,32 @@ export class ValueTrackerAPI {
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`API request failed: ${response.status} - ${errorText}`);
+                const errorText = await response.text().catch(() => 'Unknown error');
+                throw new ValueTrackerError(
+                    `API request failed: ${response.status} - ${errorText}`,
+                    response.status,
+                    {url, method: options.method || 'GET', endpoint}
+                );
+            }
+
+            // Check if response is empty before parsing JSON
+            if (response.status === 204 || response.headers.get('content-length') === '0') {
+                return undefined as T;
             }
 
             return await response.json();
         } catch (error) {
-            logError(`API request to ${url} failed:`, error);
-            throw error;
+            if (error instanceof ValueTrackerError) {
+                logError(`ValueTracker API Error: ${error.message}`, error.details);
+                throw error;
+            } else {
+                logError(`API request to ${url} failed:`, error);
+                throw new ValueTrackerError(
+                    `Network error: ${(error as Error).message || 'Unknown network error'}`,
+                    undefined,
+                    {url, method: options.method || 'GET', endpoint}
+                );
+            }
         }
     }
 }
@@ -411,6 +686,8 @@ export const valueTrackerAPI = new ValueTrackerAPI();
  */
 export const initializeValueTrackerAPI = (extensionId: string): void => {
     valueTrackerAPI.setExtensionId(extensionId);
+    // Clear cache when initializing with a new extension ID
+    valueTrackerAPI.clearCache();
 };
 
 /**

@@ -101,6 +101,13 @@ const instance = await valueTrackerAPI.getInstance('instance-456');
 const response = await valueTrackerAPI.deleteInstance('instance-456');
 ```
 
+#### Delete All Instances for a Character
+
+```typescript
+const response = await valueTrackerAPI.deleteAllInstancesForCharacter('char-123');
+// Returns a response with success status and deleted count
+```
+
 ### Data Management
 
 #### Store Data in an Instance
@@ -110,6 +117,16 @@ const response = await valueTrackerAPI.createOrUpdateInstanceData(
   'instance-456',
   'health',
   100
+);
+```
+
+#### Alternative Method to Store Data (using PUT instead of POST)
+
+```typescript
+const response = await valueTrackerAPI.createOrUpdateInstanceDataAlt(
+  'instance-456',
+  'mana',
+  50
 );
 ```
 
@@ -199,6 +216,31 @@ const data = await valueTrackerAPI.getCrossExtensionInstanceData(
 );
 ```
 
+#### Get Specific Data Key from Another Extension
+
+```typescript
+const healthData = await valueTrackerAPI.getCrossExtensionInstanceDataKey(
+  'other-extension-id',
+  'instance-789',
+  'health'
+);
+```
+
+#### Get All Characters from Another Extension
+
+```typescript
+const characters = await valueTrackerAPI.getAllCrossExtensionCharacters('other-extension-id');
+```
+
+#### Get All Instances for a Character from Another Extension
+
+```typescript
+const instances = await valueTrackerAPI.getCrossExtensionInstancesByCharacter(
+  'other-extension-id',
+  'char-789'
+);
+```
+
 ## Complete Example
 
 Here's a complete example of using the ValueTracker API:
@@ -213,28 +255,44 @@ async function example() {
   try {
     // Register your extension
     await valueTrackerAPI.registerExtension('my-extension-id');
-    
+
     // Create a character
     const character = await valueTrackerAPI.createOrUpdateCharacter({
       id: 'char-123',
       name: 'Example Character'
     });
-    
+
     // Create an instance for the character
     const instance = await valueTrackerAPI.createOrUpdateInstance({
       id: 'instance-456',
       characterId: 'char-123',
       name: 'Example Instance'
     });
-    
+
     // Store some data in the instance
     await valueTrackerAPI.createOrUpdateInstanceData('instance-456', 'health', 100);
     await valueTrackerAPI.createOrUpdateInstanceData('instance-456', 'mana', 50);
-    
+
+    // Alternative method to store data
+    await valueTrackerAPI.createOrUpdateInstanceDataAlt('instance-456', 'stamina', 75);
+
     // Retrieve the data
     const data = await valueTrackerAPI.getInstanceData('instance-456');
     console.log('Instance data:', data);
-    
+
+    // Update multiple values at once
+    const mergeResponse = await valueTrackerAPI.mergeInstanceData('instance-456', {
+      level: 5,
+      experience: 1200
+    });
+
+    // Override all instance data
+    const overrideResponse = await valueTrackerAPI.overrideInstanceData('instance-456', {
+      health: 90,
+      mana: 60,
+      newStat: 'newValue'
+    });
+
     // When done, deregister your extension
     await valueTrackerAPI.deregisterExtension('my-extension-id');
   } catch (error) {
@@ -247,3 +305,40 @@ async function example() {
 
 For complete API reference, see the TypeScript definitions in the source code. All methods return Promises and include
 proper TypeScript typing for better development experience.
+
+### ValueTrackerAPI Methods
+
+- `registerExtension(extensionId: string)`: Register an extension with the ValueTracker plugin
+- `deregisterExtension(extensionId: string)`: Deregister an extension from the ValueTracker plugin
+- `getAllCharacters()`: Get all characters
+- `getCharacter(id: string)`: Get a specific character by ID
+- `createOrUpdateCharacter(characterData: CreateCharacterRequest)`: Create or update a character
+- `deleteCharacter(id: string)`: Delete a character by ID
+- `getAllInstancesForCharacter(characterId: string)`: Get all instances for a character
+- `getInstance(id: string)`: Get a specific instance by ID
+- `createOrUpdateInstance(instanceData: CreateInstanceRequest)`: Create or update an instance
+- `deleteInstance(id: string)`: Delete an instance by ID
+- `deleteAllInstancesForCharacter(characterId: string)`: Delete all instances for a character
+- `getInstanceData(id: string)`: Get all data for a specific instance
+- `getInstanceDataKey(id: string, key: string)`: Get a specific data key for an instance
+- `createOrUpdateInstanceData(id: string, key: string, value: any)`: Create or update a data key-value pair
+- `createOrUpdateInstanceDataAlt(id: string, key: string, value: any)`: Alternative method to create or update a data
+  key-value pair
+- `deleteInstanceDataKey(id: string, key: string)`: Delete a specific data key for an instance
+- `clearInstanceData(id: string)`: Clear all data for an instance
+- `overrideInstanceData(id: string, data: OverrideInstanceDataRequest)`: Override all data for an instance
+- `mergeInstanceData(id: string, data: OverrideInstanceDataRequest)`: Merge new data with existing data
+- `removeInstanceDataKeys(id: string, keys: string[])`: Remove specific data keys from an instance
+- `getCrossExtensionCharacter(extensionId: string, id: string)`: Get a character from another extension
+- `getCrossExtensionInstance(extensionId: string, id: string)`: Get an instance from another extension
+- `getCrossExtensionInstanceData(extensionId: string, id: string)`: Get all data for an instance from another extension
+- `getCrossExtensionInstanceDataKey(extensionId: string, id: string, key: string)`: Get a specific data key for an
+  instance from another extension
+- `getAllCrossExtensionCharacters(extensionId: string)`: Get all characters from another extension
+- `getCrossExtensionInstancesByCharacter(extensionId: string, characterId: string)`: Get all instances for a character
+  from another extension
+
+### Convenience Functions
+
+- `initializeValueTrackerAPI(extensionId: string)`: Initialize the default API instance with an extension ID
+- `getValueTrackerExtensionId()`: Get the current extension ID used by the API

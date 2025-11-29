@@ -61,7 +61,7 @@ export interface HeaderButtonOptions {
  */
 export function createWrapper(options: BaseOptions): HTMLElement {
     const wrapper = document.createElement('div');
-    wrapper.classList.add('st-outfits-option');
+    wrapper.classList.add('sillytavern-lib-option');
     if (options.class) {
         wrapper.classList.add(...options.class.split(' '));
     }
@@ -99,7 +99,7 @@ export function createLabel(
  */
 export function createDescription(text: string): HTMLElement {
     const description = document.createElement('p');
-    description.classList.add('st-outfits-option-description');
+    description.classList.add('sillytavern-lib-option-description');
     description.textContent = text;
     return description;
 }
@@ -120,7 +120,7 @@ export function AddCheckbox(
 
     const id =
         options.id ??
-        `st-outfits-checkbox-${Math.random().toString(36).substring(2)}`;
+        `sillytavern-lib-checkbox-${Math.random().toString(36).substring(2)}`;
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -138,7 +138,7 @@ export function AddCheckbox(
     });
 
     const labelAndInput = document.createElement('div');
-    labelAndInput.classList.add('st-outfits-option-label-input');
+    labelAndInput.classList.add('sillytavern-lib-option-label-input');
 
     if (options.label) {
         const label = createLabel(id, options.label, options.labelClass);
@@ -175,7 +175,7 @@ export function AddTextbox(
 
     const id =
         options.id ??
-        `st-outfits-textbox-${Math.random().toString(36).substring(2)}`;
+        `sillytavern-lib-textbox-${Math.random().toString(36).substring(2)}`;
 
     if (options.label) {
         const label = createLabel(id, options.label, options.labelClass);
@@ -226,7 +226,7 @@ export function AddButton(
     const button = document.createElement('button');
     button.id =
         options.id ??
-        `st-outfits-button-${Math.random().toString(36).substring(2)}`;
+        `sillytavern-lib-button-${Math.random().toString(36).substring(2)}`;
     button.textContent = options.text;
 
     if (options.attributes) {
@@ -287,7 +287,7 @@ export function AddIconButton(
     const button = document.createElement('button');
     button.id =
         options.id ??
-        `st-outfits-icon-button-${Math.random().toString(36).substring(2)}`;
+        `sillytavern-lib-icon-button-${Math.random().toString(36).substring(2)}`;
 
     if (options.attributes) {
         Object.entries(options.attributes).forEach(([key, value]) => {
@@ -340,7 +340,7 @@ export function AddGroup(
     options: GroupOptions,
 ): HTMLElement {
     const fieldset = document.createElement('fieldset');
-    fieldset.classList.add('st-outfits-group');
+    fieldset.classList.add('sillytavern-lib-group');
     if (options.class) {
         fieldset.classList.add(...options.class.split(' '));
     }
@@ -371,7 +371,7 @@ export function AddGalleryContainer(
     options: BaseOptions,
 ): HTMLElement {
     const gallery = document.createElement('div');
-    gallery.classList.add('st-outfits-gallery');
+    gallery.classList.add('sillytavern-lib-gallery');
     if (options.class) {
         gallery.classList.add(...options.class.split(' '));
     }
@@ -393,7 +393,7 @@ export function AddVerticalContainer(
     options: BaseOptions,
 ): HTMLElement {
     const group = document.createElement('div');
-    group.classList.add('st-outfits-vertical-group');
+    group.classList.add('sillytavern-lib-vertical-group');
     if (options.class) {
         group.classList.add(...options.class.split(' '));
     }
@@ -415,7 +415,7 @@ export function AddHorizontalContainer(
     options: BaseOptions,
 ): HTMLElement {
     const group = document.createElement('div');
-    group.classList.add('st-outfits-horizontal-group');
+    group.classList.add('sillytavern-lib-horizontal-group');
     if (options.class) {
         group.classList.add(...options.class.split(' '));
     }

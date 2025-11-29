@@ -5,6 +5,7 @@ module.exports = {
         index: './src/index.ts',
         'types/index': './src/types/index.ts',
         'utils/index': './src/utils/index.ts',
+        'styles/index': './src/styles/index.ts',
     },
     module: {
         rules: [
@@ -12,6 +13,10 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
+            },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
             },
         ],
     },

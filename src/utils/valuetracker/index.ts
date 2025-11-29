@@ -33,6 +33,7 @@ import {
     RegistrationResponse,
     RemoveInstanceDataKeysResult
 } from './types';
+import {ContextUtil} from "../context";
 
 // Custom error class for ValueTracker API errors
 export class ValueTrackerError extends Error {
@@ -522,19 +523,11 @@ export class ValueTrackerAPI {
      */
     private async getSillyTavernHeaders(): Promise<Record<string, string>> {
         try {
-            // Access the global SillyTavern context to get default headers
-            if (typeof (window as any).SillyTavern === 'object' &&
-                typeof (window as any).SillyTavern.getRequestHeaders === 'function') {
-                return (window as any).SillyTavern.getRequestHeaders();
-            } else {
-                // Fallback to basic headers if SillyTavern context is not available
-                return {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                };
-            }
+            const contextUtil = new ContextUtil();
+            const ctx = await contextUtil.fetchSillyTavernContext();
+            return ctx.getRequestHeaders();
         } catch (error) {
-            logError('Could not get SillyTavern headers, using fallback headers:', error);
+            logError('Could not get SillyTavern headers:', error);
             // Return basic fallback headers
             return {
                 'Content-Type': 'application/json',

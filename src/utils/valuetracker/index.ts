@@ -454,6 +454,68 @@ export class ValueTrackerAPI {
     }
 
     /**
+     * Get a character from another extension
+     * @param extensionId The ID of the target extension
+     * @param id The ID of the character to retrieve
+     * @returns Promise resolving to a FullCharacter object
+     */
+    async getCrossExtensionCharacter(extensionId: string, id: string): Promise<GetCrossExtensionCharacterResult> {
+        return this.apiRequest(`/cross-extension/characters/${extensionId}/${id}`, {}, false);
+    }
+
+    /**
+     * Get an instance from another extension
+     * @param extensionId The ID of the target extension
+     * @param id The ID of the instance to retrieve
+     * @returns Promise resolving to a FullInstance object
+     */
+    async getCrossExtensionInstance(extensionId: string, id: string): Promise<GetCrossExtensionInstanceResult> {
+        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}`, {}, false);
+    }
+
+    /**
+     * Get all data for an instance from another extension
+     * @param extensionId The ID of the target extension
+     * @param id The ID of the instance to get data for
+     * @returns Promise resolving to a record containing all key-value pairs
+     */
+    async getCrossExtensionInstanceData(extensionId: string, id: string): Promise<GetCrossExtensionInstanceDataResult> {
+        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}/data`, {}, false);
+    }
+
+    /**
+     * Get a specific data key for an instance from another extension
+     * @param extensionId The ID of the target extension
+     * @param id The ID of the instance
+     * @param key The key to retrieve
+     * @returns Promise resolving to an object with the key-value pair
+     */
+    async getCrossExtensionInstanceDataKey(extensionId: string, id: string, key: string): Promise<GetCrossExtensionInstanceDataKeyResult> {
+        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}/data/${key}`, {}, false);
+    }
+
+    // Complex Operations
+
+    /**
+     * Get all characters from another extension
+     * @param extensionId The ID of the target extension
+     * @returns Promise resolving to an array of Character objects
+     */
+    async getAllCrossExtensionCharacters(extensionId: string): Promise<GetAllCrossExtensionCharactersResult> {
+        return this.apiRequest(`/cross-extension/characters/${extensionId}`, {}, false);
+    }
+
+    /**
+     * Get all instances for a character from another extension
+     * @param extensionId The ID of the target extension
+     * @param characterId The ID of the character to get instances for
+     * @returns Promise resolving to an array of Instance objects
+     */
+    async getCrossExtensionInstancesByCharacter(extensionId: string, characterId: string): Promise<GetCrossExtensionInstancesByCharacterResult> {
+        return this.apiRequest(`/cross-extension/characters/${extensionId}/${characterId}/instances`, {}, false);
+    }
+
+    /**
      * Get data from cache if available and not expired
      * @param key The cache key
      * @returns The cached data or undefined if not available or expired
@@ -469,6 +531,8 @@ export class ValueTrackerAPI {
         }
         return undefined;
     }
+
+    // Cross-Extension Reading Methods (no extension ID required)
 
     /**
      * Store data in cache
@@ -505,8 +569,6 @@ export class ValueTrackerAPI {
         }
     }
 
-    // Complex Operations
-
     /**
      * Validates extension ID
      * @param extensionId The extension ID to validate
@@ -534,68 +596,6 @@ export class ValueTrackerAPI {
                 'X-Requested-With': 'XMLHttpRequest'
             };
         }
-    }
-
-    /**
-     * Get a character from another extension
-     * @param extensionId The ID of the target extension
-     * @param id The ID of the character to retrieve
-     * @returns Promise resolving to a FullCharacter object
-     */
-    async getCrossExtensionCharacter(extensionId: string, id: string): Promise<GetCrossExtensionCharacterResult> {
-        return this.apiRequest(`/cross-extension/characters/${extensionId}/${id}`, {}, false);
-    }
-
-    // Cross-Extension Reading Methods (no extension ID required)
-
-    /**
-     * Get an instance from another extension
-     * @param extensionId The ID of the target extension
-     * @param id The ID of the instance to retrieve
-     * @returns Promise resolving to a FullInstance object
-     */
-    async getCrossExtensionInstance(extensionId: string, id: string): Promise<GetCrossExtensionInstanceResult> {
-        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}`, {}, false);
-    }
-
-    /**
-     * Get all data for an instance from another extension
-     * @param extensionId The ID of the target extension
-     * @param id The ID of the instance to get data for
-     * @returns Promise resolving to a record containing all key-value pairs
-     */
-    async getCrossExtensionInstanceData(extensionId: string, id: string): Promise<GetCrossExtensionInstanceDataResult> {
-        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}/data`, {}, false);
-    }
-
-    /**
-     * Get a specific data key for an instance from another extension
-     * @param extensionId The ID of the target extension
-     * @param id The ID of the instance
-     * @param key The key to retrieve
-     * @returns Promise resolving to an object with the key-value pair
-     */
-    async getCrossExtensionInstanceDataKey(extensionId: string, id: string, key: string): Promise<GetCrossExtensionInstanceDataKeyResult> {
-        return this.apiRequest(`/cross-extension/instances/${extensionId}/${id}/data/${key}`, {}, false);
-    }
-
-    /**
-     * Get all characters from another extension
-     * @param extensionId The ID of the target extension
-     * @returns Promise resolving to an array of Character objects
-     */
-    async getAllCrossExtensionCharacters(extensionId: string): Promise<GetAllCrossExtensionCharactersResult> {
-        return this.apiRequest(`/cross-extension/characters/${extensionId}`, {}, false);
-    }
-
-    /**
-     * Get all instances for a character from another extension
-     * @param extensionId The ID of the target extension
-     * @param characterId The ID of the character to get instances for
-     * @returns Promise resolving to an array of Instance objects
-     */
-    async getCrossExtensionInstancesByCharacter(extensionId: string, characterId: string): Promise<GetCrossExtensionInstancesByCharacterResult> {
-        return this.apiRequest(`/cross-extension/characters/${extensionId}/${characterId}/instances`, {}, false);
     }
 
     /**

@@ -43,6 +43,14 @@ export class Logger {
     }
 
     /**
+     * Gets the default log level used when creating new Logger instances
+     * @returns {LogLevel} The default log level
+     */
+    static getDefaultLogLevel(): LogLevel {
+        return LogLevel.INFO;
+    }
+
+    /**
      * Logs a debug message if the current log level allows it
      * @param {any} message - The message to log
      * @param {...any} optionalParams - Additional parameters to log
@@ -100,14 +108,6 @@ export class Logger {
      */
     setPrefix(prefix: string): void {
         this.prefix = prefix;
-    }
-
-    /**
-     * Gets the default log level used when creating new Logger instances
-     * @returns {LogLevel} The default log level
-     */
-    static getDefaultLogLevel(): LogLevel {
-        return LogLevel.INFO;
     }
 
     /**

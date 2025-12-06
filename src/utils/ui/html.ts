@@ -583,8 +583,12 @@ export function AddHeaderButton(options: HeaderButtonOptions): {
             // Insert at the specified index
             holder.insertBefore(buttonContainer, children[options.position]);
         }
+    } else if (options.position === 'first') {
+        // insert as second element
+        holder.insertBefore(buttonContainer, holder.children[1]);
     } else if (options.position === 'last') {
-        holder.appendChild(buttonContainer);
+        // insert as second to last element
+        holder.insertBefore(buttonContainer, holder.lastElementChild);
     } else {
         // Prepend by default to be consistent with other drawers that are on the left side
         holder.prepend(buttonContainer);

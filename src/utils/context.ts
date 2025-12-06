@@ -73,28 +73,6 @@ export class ContextUtil {
     }
 
     /**
-     * Get the current character's name
-     */
-    public async getCharacterName(): Promise<string> {
-        const context = await this.fetchSillyTavernContext();
-        if (context.name2 === undefined) {
-            throw new Error('Character name is not available in the current context');
-        }
-        return context.name2;
-    }
-
-    /**
-     * Get the current character ID
-     */
-    public async getCharacterId(): Promise<string> {
-        const context = await this.fetchSillyTavernContext();
-        if (context.characterId === undefined) {
-            throw new Error('Character ID is not available in the current context');
-        }
-        return context.characterId;
-    }
-
-    /**
      * Get the current group ID
      */
     public async getGroupId(): Promise<string> {
@@ -184,19 +162,6 @@ export class ContextUtil {
     }
 
     /**
-     * Get a character by ID (which is the array index as integer)
-     */
-    public async getCharacterById(id: number): Promise<ISillyTavernContext['characters'][0] | undefined> {
-        try {
-            const characters = await this.getCharacters();
-            return characters[id];
-        } catch (error) {
-            console.warn(`Could not get character with ID ${id}:`, error);
-            return undefined;
-        }
-    }
-
-    /**
      * Get the current menu type
      */
     public async getMenuType(): Promise<string> {
@@ -261,6 +226,17 @@ export class ContextUtil {
             throw new Error('Tags are not available in the current context');
         }
         return context.tags;
+    }
+
+    /**
+     * Get legacy char ID
+     */
+    public async getCurrentLegacyIdentifier(): Promise<ISillyTavernContext['characterId']> {
+        const context = await this.fetchSillyTavernContext();
+        if (context.characterId === undefined) {
+            throw new Error('Legacy character ID is not available in the current context');
+        }
+        return context.characterId;
     }
 
     /**

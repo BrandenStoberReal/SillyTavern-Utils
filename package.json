@@ -1,6 +1,6 @@
 {
   "name": "sillytavern-utils",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "A collection of TypeScript utilities and type definitions for SillyTavern.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -58,6 +58,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@types/toastr": "^2.1.43",
     "toastr": "^2.1.4"
   }

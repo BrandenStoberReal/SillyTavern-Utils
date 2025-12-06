@@ -518,6 +518,7 @@ export function AddHeaderButton(options: HeaderButtonOptions): {
     iconEl.id = `${options.id}-icon`;
     iconEl.title = options.title;
     iconEl.setAttribute('role', 'button');
+    iconEl.setAttribute('tabindex', '0');
 
     const drawerContent = document.createElement('div');
     drawerContent.id = `${options.id}-content`;
@@ -527,12 +528,36 @@ export function AddHeaderButton(options: HeaderButtonOptions): {
     buttonContainer.appendChild(drawerToggle);
     buttonContainer.appendChild(drawerContent);
 
-    // Add click event listener to toggle the drawer
+    // Add explicit drawer open/close logic to ensure it works
     drawerToggle.addEventListener('click', () => {
-        iconEl.classList.toggle('closedIcon');
-        iconEl.classList.toggle('openIcon');
-        drawerContent.classList.toggle('closedDrawer');
-        drawerContent.classList.toggle('openDrawer');
+        const isOpened = iconEl.classList.contains('openIcon');
+
+        // Close all other drawers
+        document.querySelectorAll('#top-settings-holder .drawer-toggle').forEach(otherToggle => {
+            const otherIcon = otherToggle.querySelector('.drawer-icon');
+            const otherContent = otherToggle.nextElementSibling;
+            if (otherIcon && otherContent && otherIcon.id !== iconEl.id) {
+                otherIcon.classList.remove('openIcon');
+                otherIcon.classList.add('closedIcon');
+                if (otherContent.classList.contains('openDrawer')) {
+                    otherContent.classList.remove('openDrawer');
+                    otherContent.classList.add('closedDrawer');
+                }
+            }
+        });
+
+        // Toggle the current drawer
+        if (isOpened) {
+            iconEl.classList.remove('openIcon');
+            iconEl.classList.add('closedIcon');
+            drawerContent.classList.remove('openDrawer');
+            drawerContent.classList.add('closedDrawer');
+        } else {
+            iconEl.classList.add('openIcon');
+            iconEl.classList.remove('closedIcon');
+            drawerContent.classList.add('openDrawer');
+            drawerContent.classList.remove('closedDrawer');
+        }
     });
 
     // Use position to determine where to add the button

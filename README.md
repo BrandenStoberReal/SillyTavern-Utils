@@ -106,4 +106,4 @@ GitHub: [https://github.com/SillyTavern/SillyTavern-Utils](https://github.com/Si
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the Apache 2.0 License.

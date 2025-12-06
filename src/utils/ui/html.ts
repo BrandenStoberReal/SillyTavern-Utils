@@ -521,7 +521,7 @@ export function AddHeaderButton(options: HeaderButtonOptions): {
     iconEl.setAttribute('tabindex', '0');
 
     const drawerContent = document.createElement('div');
-    drawerContent.id = `${options.id}-content`;
+    drawerContent.id = `right-nav-panel`;
     drawerContent.classList.add('drawer-content', 'closedDrawer', 'fillRight');
 
     drawerToggle.appendChild(iconEl);

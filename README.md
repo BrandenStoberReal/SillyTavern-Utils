@@ -15,6 +15,8 @@ It is divided into four main parts:
   context.
 - **Styles**: CSS styles that can be imported into your project.
 
+Please consult the full docs on the [Wiki](https://github.com/BrandenStoberReal/SillyTavern-Utils/wiki)
+
 ## Installation
 
 To install the library, you can use npm:

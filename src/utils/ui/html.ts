@@ -52,6 +52,7 @@ export interface HeaderButtonOptions {
     iconName: string;
     title: string;
     position?: HeaderButtonPosition;
+    iconVariant?: 'regular' | 'solid' | 'light' | 'duotone' | 'thin';
 }
 
 /**
@@ -324,9 +325,13 @@ export function AddButton(
  * @param {string} [iconClass] - Optional additional CSS classes to add to the icon
  * @returns {HTMLElement} The created icon element
  */
-export function createIcon(iconName: string, iconClass?: string): HTMLElement {
+export function createIcon(
+    iconName: string,
+    iconClass?: string,
+    iconVariant: 'regular' | 'solid' | 'light' | 'duotone' | 'thin' = 'solid',
+): HTMLElement {
     const icon = document.createElement('i');
-    icon.classList.add('fa-solid', `fa-${iconName}`);
+    icon.classList.add(`fa-${iconVariant}`, `fa-${iconName}`);
     if (iconClass) {
         icon.classList.add(...iconClass.split(' '));
     }
@@ -514,6 +519,7 @@ export function AddHeaderButton(options: HeaderButtonOptions): {
     const iconEl = createIcon(
         options.iconName,
         'drawer-icon fa-fw closedIcon interactable',
+        options.iconVariant,
     );
     iconEl.id = `${options.id}-icon`;
     iconEl.title = options.title;

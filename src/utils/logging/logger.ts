@@ -137,6 +137,16 @@ export class Logger {
             formattedMessage += JSON.stringify(message);
         }
 
+        // Append optional parameters if any
+        if (optionalParams.length > 0) {
+            formattedMessage += ' ' + optionalParams.map(param => {
+                if (typeof param === 'string') {
+                    return param;
+                }
+                return JSON.stringify(param);
+            }).join(' ');
+        }
+
         return formattedMessage;
     }
 

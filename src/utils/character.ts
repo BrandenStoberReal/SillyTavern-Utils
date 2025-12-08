@@ -104,7 +104,7 @@ export class CharacterUtil {
      * @param value - The value to set
      * @returns Promise that resolves when the metadata is set, or false if failed
      */
-    public async setCharacterMetadata(guid: string, key: string, value: any): Promise<boolean> {
+    public async setCharacterMetadataValue(guid: string, key: string, value: any): Promise<boolean> {
         try {
             await this.setCharacterExtensionFieldByGuid(guid, key, value);
             return true;

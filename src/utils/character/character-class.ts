@@ -6,7 +6,6 @@ import {Character} from '../../types';
  * Can be instantiated with either a GUID or legacy character array index.
  */
 export class SillyTavernCharacter {
-    private _character: Character | undefined;
     private _guid: string | undefined;
     private _legacyIndex: number | undefined;
     private _resolvedCharacter: Character | undefined;
@@ -14,9 +13,8 @@ export class SillyTavernCharacter {
     /**
      * Creates a SillyTavernCharacter instance.
      * @param identifier - Either a GUID string or a legacy character array index
-     * @param character - Optional pre-fetched character object
      */
-    constructor(identifier: string | number, character?: Character) {
+    constructor(identifier: string | number) {
         if (typeof identifier === 'string') {
             // GUID provided
             this._guid = identifier;
@@ -24,7 +22,6 @@ export class SillyTavernCharacter {
             // Legacy index provided
             this._legacyIndex = identifier;
         }
-        this._character = character;
     }
 
     /**
@@ -33,11 +30,6 @@ export class SillyTavernCharacter {
      */
     public async getCharacter(): Promise<Character | undefined> {
         if (this._resolvedCharacter) {
-            return this._resolvedCharacter;
-        }
-
-        if (this._character) {
-            this._resolvedCharacter = this._character;
             return this._resolvedCharacter;
         }
 

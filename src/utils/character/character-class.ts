@@ -225,6 +225,55 @@ export class SillyTavernCharacter {
     }
 
     /**
+     * Set multiple metadata values at once.
+     * @param metadata - An object containing key-value pairs of metadata to set
+     * @returns Promise that resolves when all metadata values are set
+     */
+    public async setMultipleMetadataValues(metadata: Record<string, any>): Promise<void> {
+        const character = await this.getCharacter();
+        if (!character) {
+            throw new Error('Character not found. Cannot set multiple metadata values.');
+        }
+
+        const characterIndex = (await contextUtil.getCharacters()).indexOf(character);
+        if (characterIndex === -1) {
+            throw new Error('Character not found in the character list. Cannot set multiple metadata values.');
+        }
+
+        // Use the character's index to set multiple extension fields
+        const context = await contextUtil.fetchSillyTavernContext();
+
+        // Set each metadata key-value pair
+        for (const [key, value] of Object.entries(metadata)) {
+            await context.writeExtensionField(String(characterIndex), key, value);
+        }
+
+        // Update the character object in memory to reflect the changes
+        if (character.data) {
+            if (!character.data.extensions) {
+                character.data.extensions = {};
+            }
+
+            // Merge the new metadata with existing metadata
+            for (const [key, value] of Object.entries(metadata)) {
+                character.data.extensions[key] = value;
+            }
+        }
+
+        // Update the resolved character if we have it
+        if (this._resolvedCharacter && this._resolvedCharacter.data) {
+            if (!this._resolvedCharacter.data.extensions) {
+                this._resolvedCharacter.data.extensions = {};
+            }
+
+            // Merge the new metadata with existing metadata
+            for (const [key, value] of Object.entries(metadata)) {
+                this._resolvedCharacter.data.extensions[key] = value;
+            }
+        }
+    }
+
+    /**
      * Internal method to get a character by legacy index.
      * @param index - The legacy character array index
      * @returns The character object, or undefined if not found

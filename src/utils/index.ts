@@ -4,5 +4,6 @@ export * from './logging/logger';
 export * from './settings';
 export * from './valuetracker';
 export * from './context';
-export * from './character';
+export * from './character/character';
+export * from './character/character-class';
 export * from './chat';

@@ -185,6 +185,18 @@ export class ContextUtil {
     }
 
     /**
+     * Clear the current chat
+     */
+    public async clearChat(): Promise<void> {
+        const context = await this.fetchSillyTavernContext();
+        if (typeof context.clearChat === 'function') {
+            await context.clearChat();
+        } else {
+            throw new Error('clearChat function is not available in the current context');
+        }
+    }
+
+    /**
      * Get chat completion settings
      */
     public async getChatCompletionSettings(): Promise<ISillyTavernContext['chatCompletionSettings']> {

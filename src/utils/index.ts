@@ -5,3 +5,4 @@ export * from './settings';
 export * from './valuetracker';
 export * from './context';
 export * from './character';
+export * from './chat';
